@@ -13,7 +13,7 @@ TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 CHAT_ID = os.getenv('CHAT_ID')  # Replace with your Telegram group chat ID
 
 def send_msg(text):
-    if os.getenv('DEBUG_MODE')!=1: # messages wont be sent to your telegram bot if you are not using debug mode
+    if os.getenv('DEBUG_MODE')!="1": # messages wont be sent to your telegram bot if you are not using debug mode
         token = TELEGRAM_BOT_TOKEN
         chat_id = CHAT_ID
         url_req = f"https://api.telegram.org/bot{token}/sendMessage?chat_id={chat_id}&text={text}"
@@ -28,7 +28,7 @@ def send_msg(text):
             print(f"Failed to send message: {response.status_code}, {response.reason}")
 
 
-def check_websites(websites, max_attempts=3, retry_interval=5, retry_delay=60, status_report_interval=600):
+def check_websites(websites, max_attempts=3, retry_interval=5, retry_delay=60, status_report_interval=10):#600
     unreachable_websites = {}
     accessible_websites = set()
     last_report_time = time.time()
@@ -69,13 +69,16 @@ def check_websites(websites, max_attempts=3, retry_interval=5, retry_delay=60, s
         if current_time - last_report_time >= status_report_interval:
             print(f"Status report at {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(current_time))}:")
             send_msg(f"Status report at {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(current_time))}:")
-            print("Accessible websites:")
-            send_msg("Accessible websites:")
+            currentAcessibleWebistes=len(accessible_websites)
+            currentUnreachablewebsites = len(unreachable_websites)
+
+            print(f"Accessible websites:{currentAcessibleWebistes}")
+            send_msg(f"Accessible websites:{currentUnreachablewebsites}")
             for site in accessible_websites:
                 print(f" - {site}")
                 send_msg(f" - {site}")
-            print("Inacessible websites:")
-            send_msg("Inacessible websites:")
+            print(f"Inacessible websites:{currentUnreachablewebsites}")
+            send_msg(f"Inacessible websites:{currentUnreachablewebsites}")
             for site in unreachable_websites:
                 print(f" - {site}")
                 send_msg(f" - {site}")
@@ -102,7 +105,9 @@ def check_websites(websites, max_attempts=3, retry_interval=5, retry_delay=60, s
                 current_time = time.time()
                 if current_time - last_report_time >= status_report_interval:
                     print(f"Status report at {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(current_time))}:")
-                    print("Accessible websites:")
+                    currentAcessibleWebistes=len(accessible_websites)
+                    print(f"Accessible websites:{currentAcessibleWebistes}")
+                    send_msg(f"Accessible websites:{currentAcessibleWebistes}")
                     for site in accessible_websites:
                         print(f" - {site}")
                     last_report_time = current_time
