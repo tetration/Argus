@@ -28,7 +28,7 @@ def send_msg(text):
             print(f"Failed to send message: {response.status_code}, {response.reason}")
 
 
-def check_websites(websites, max_attempts=3, retry_interval=5, retry_delay=60, status_report_interval=10):#600
+def check_websites(websites, max_attempts=int(os.getenv('max_attempts')), retry_interval=int(os.getenv('retry_interval')), retry_delay=int(os.getenv('retry_delay')), status_report_interval=int(os.getenv('status_report_interval')) ): #Status Report Interval 600 is equal to 10 minutes in real life for 1 hour change it to 3600 seconds
     unreachable_websites = {}
     accessible_websites = set()
     last_report_time = time.time()
