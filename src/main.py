@@ -137,7 +137,7 @@ def check_websites(websites, max_attempts=int(os.getenv('max_attempts')), retry_
 
 
         else:
-            print("Continuing to check the remaining websites.")
+            print("No unreachable websites remain for retrying. Continuing to check the remaining websites.")
 
 # List of websites to check
 websites_to_check =os.getenv('WEBSITES_TO_CHECK').split(',')
