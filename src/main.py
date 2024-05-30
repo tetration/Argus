@@ -32,11 +32,6 @@ def check_websites(websites, max_attempts=int(os.getenv('max_attempts')), retry_
     unreachable_websites = {}
     accessible_websites = set()
     last_report_time = time.time()
-    #instantiate log logic
-    if os.getenv('LOG')==1: #checks if logging is enabled
-        old_stdout = sys.stdout
-        log_file = open("message.log","w")
-        sys.stdout = log_file
 
     while True:
         for website in websites[:]:
