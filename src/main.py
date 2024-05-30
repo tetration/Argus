@@ -69,7 +69,7 @@ def check_websites(websites, max_attempts=int(os.getenv('max_attempts')), retry_
                     print(f"Failed to access {website} after {max_attempts} attempts. {websites} will now be considered inacessible")
                     send_msg(f"Failed to access {website} after {max_attempts} attempts. {websites} will now be considered inacessible")
 
-            time.sleep(retry_interval)
+        time.sleep(retry_interval)
 
         current_time = time.time()
         if current_time - last_report_time >= status_report_interval:
