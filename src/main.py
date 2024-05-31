@@ -28,7 +28,7 @@ def send_msg(text):
             print(f"Failed to send message: {response.status_code}, {response.reason}")
 
 
-def check_websites(websites, max_attempts=int(os.getenv('max_attempts')), retry_interval=int(os.getenv('retry_interval')), retry_delay=int(os.getenv('retry_delay')), status_report_interval=int(os.getenv('status_report_interval')), maximum_retries=int(os.getenv('maximum_retries')) ): #Status Report Interval 600 is equal to 10 minutes in real life for 1 hour change it to 3600
+def check_websites(websites, max_attempts=int(os.getenv('max_attempts')), retry_interval=int(os.getenv('retry_interval')), retry_delay=int(os.getenv('retry_delay')), status_report_interval=int(os.getenv('status_report_interval')), maximum_retries=int(os.getenv('maximum_retries')), send_status_report=os.getenv('send_status_report') ): #Status Report Interval 600 is equal to 10 minutes in real life for 1 hour change it to 3600
     attempts_dict_websites = {website: 0 for website in websites}
     accessible_websites = set()
     last_report_time = time.time()
@@ -72,7 +72,7 @@ def check_websites(websites, max_attempts=int(os.getenv('max_attempts')), retry_
         time.sleep(retry_interval)
 
         current_time = time.time()
-        if current_time - last_report_time >= status_report_interval:
+        if current_time - last_report_time >= status_report_interval and send_status_report=='TRUE':
             print(f"Status report at {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(current_time))}:")
             send_msg(f"Status report at {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(current_time))}:")
             currentAcessibleWebistes=len(accessible_websites)
@@ -106,8 +106,13 @@ def check_websites(websites, max_attempts=int(os.getenv('max_attempts')), retry_
                                 accessible_websites.add(website)
                         except urllib.error.URLError as e:
                             print(f"Retry for {website} failed: {e.reason}")
+                            send_msg(f"Retry for {website} failed: {e.reason}")
+                        except ValueError as e:
+                            print(f"Retry for {website} failed due to ValueError: {e}")
+                            send_msg(f"Retry for {website} failed due to ValueError: {e}")
                         except Exception as e:
                             print(f"An error occurred with {website}: {e}")
+                            send_msg(f"Retry for {website} failed: {e.reason}")
                     time.sleep(retry_delay)
                 if retries <= maximum_retries:# maximum retries will 
                     current_unreachable_websites = ', '.join(website for website, attempts in attempts_dict_websites.items() if attempts >= max_attempts)
@@ -115,7 +120,7 @@ def check_websites(websites, max_attempts=int(os.getenv('max_attempts')), retry_
                     break
 
                 current_time = time.time()
-                if current_time - last_report_time >= status_report_interval:
+                if current_time - last_report_time >= status_report_interval and send_status_report=='TRUE':
                     print(f"Status report at {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(current_time))}:")
                     currentAcessibleWebistes=len(accessible_websites)
                     print(f"Accessible websites:{currentAcessibleWebistes}")
