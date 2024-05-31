@@ -1,4 +1,5 @@
 # Argus Bot
+![Argus](https://github.com/tetration/Argus/assets/2152854/c793ba95-494e-4444-8ce7-cf1b92e2f4e8)
 
 Argus Bot is a Python script designed to monitor the accessibility of a list of websites. Named after Argus Panoptes from Greek mythology, who had many eyes to watch over everything, this bot continuously checks if websites are up and sends notifications if any become unreachable. It also provides periodic status reports.
 
@@ -10,7 +11,7 @@ Argus Bot is a Python script designed to monitor the accessibility of a list of 
 - Configurable logging to file and console.
 
 ## Requirements
-- Python 3.x
+- Python Python 3.10.6 (Tested Under this version)
 - Required Python packages: `requests`, `python-dotenv`, `urllib`
 
 ## Setup
@@ -42,7 +43,7 @@ Argus Bot is a Python script designed to monitor the accessibility of a list of 
     - `TELEGRAM_BOT_TOKEN`: Your Telegram bot token.
     - `CHAT_ID`: Your Telegram chat ID.
     - `DEBUG_MODE`: Set to `1` to enable debug mode (disables Telegram messages).
-    - `LOG`: Set to `1` to enable logging to file.
+    - `LOG`: Set to `1` to enable logging to log file.
     - `WEBSITES_TO_CHECK`: Comma-separated list of websites to monitor.
     - `max_attempts`: Maximum number of attempts before marking a website as unreachable.
     - `retry_interval`: Time (in seconds) between checks for each website.
