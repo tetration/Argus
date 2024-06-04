@@ -56,10 +56,10 @@ def check_websites(websites, max_attempts=int(os.getenv('max_attempts')), retry_
         logger.info(f"current attempts dict website: {attempts_dict_websites}")
         for website in websites[:]:
             attempts = attempts_dict_websites.get(website, 0)
-            if attempts >= max_attempts and website in accessible_websites:
+            if attempts >= max_attempts:
                 logger.error(f"Failed to access {website} after {max_attempts} attempts. {website} will now be considered inacessible")
-                send_msg(f"Failed to access {website} after {max_attempts} attempts. {website} will now be considered inacessible")
                 if website in accessible_websites:
+                    send_msg(f"Failed to access {website} after {max_attempts} attempts. {website} will now be considered inacessible")
                     accessible_websites.remove(website)
                 continue
 
