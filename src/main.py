@@ -78,15 +78,15 @@ def check_websites(websites, max_attempts=int(os.getenv('max_attempts')), retry_
                 attempts_dict_websites[website] = attempts_dict_websites[website] + 1
                 if website in accessible_websites and attempts_dict_websites[website] == max_attempts:
                     accessible_websites.remove(website)
-                    logger.error(f"Failed to access {website} after {max_attempts} attempts. {websites} will now be considered inacessible")
-                    send_msg(f"Failed to access {website} after {max_attempts} attempts. {websites} will now be considered inacessible")
+                    logger.error(f"Failed to access {website} after {max_attempts} attempts. {website} will now be considered inacessible")
+                    send_msg(f"Failed to access {website} after {max_attempts} attempts. {website} will now be considered inacessible")
             except Exception as e:
                 logger.error(f"An error occurred with {website}: {e}")
                 attempts_dict_websites[website] = attempts_dict_websites[website] + 1
                 if website in accessible_websites and attempts_dict_websites[website] == max_attempts:
                     accessible_websites.remove(website)
-                    logger.error(f"Failed to access {website} after {max_attempts} attempts. {websites} will now be considered inacessible")
-                    send_msg(f"Failed to access {website} after {max_attempts} attempts. {websites} will now be considered inacessible")
+                    logger.error(f"Failed to access {website} after {max_attempts} attempts. {website} will now be considered inacessible")
+                    send_msg(f"Failed to access {website} after {max_attempts} attempts. {website} will now be considered inacessible")
 
         time.sleep(retry_interval)
 
