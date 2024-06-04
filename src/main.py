@@ -125,13 +125,13 @@ def check_websites(websites, max_attempts=int(os.getenv('max_attempts')), retry_
                                 accessible_websites.add(website)
                         except urllib.error.URLError as e:
                             logger.error(f"Retry for {website} failed: {e.reason}")
-                            send_msg(f"Retry for {website} failed: {e.reason}")
+                            if os.getenv('keep_warning_about_retries')=="TRUE": send_msg(f"Retry for {website} failed: {e.reason}")
                         except ValueError as e:
                             logger.error(f"Retry for {website} failed due to ValueError: {e}")
-                            send_msg(f"Retry for {website} failed due to ValueError: {e}")
+                            if os.getenv('keep_warning_about_retries')=="TRUE": send_msg(f"Retry for {website} failed due to ValueError: {e}")
                         except Exception as e:
                             logger.error(f"An error occurred with {website}: {e}")
-                            send_msg(f"Retry for {website} failed: {e.reason}")
+                            if os.getenv('keep_warning_about_retries')=="TRUE": send_msg(f"Retry for {website} failed: {e.reason}")
                     time.sleep(retry_delay)
                 if retries <= maximum_retries:# maximum retries will 
                     current_unreachable_websites = ', '.join(website for website, attempts in attempts_dict_websites.items() if attempts >= max_attempts)

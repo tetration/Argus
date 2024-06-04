@@ -32,6 +32,7 @@ Argus Bot is a Python script designed to monitor the accessibility of a list of 
     max_attempts=3
     retry_interval=5
     retry_delay=60
+    keep_warning_about_retries=TRUE
     status_report_interval=600
     maximum_retries=10
     send_status_report=TRUE
@@ -48,6 +49,7 @@ Argus Bot is a Python script designed to monitor the accessibility of a list of 
     - `max_attempts`: Maximum number of attempts before marking a website as unreachable.
     - `retry_interval`: Time (in seconds) between checks for each website.
     - `retry_delay`: Time (in seconds) between retries for unreachable websites.
+    - `keep_warning_about_retries`: If Set to `TRUE` the bot will keep sending messages on telegram about failed attempts of re-establishing connection. If set to `FALSE` it will appear on the log file or log console. 
     - `status_report_interval`: Time (in seconds) between status reports.
     - `maximum_retries`: Maximum number of retries for unreachable websites.
     - `send_status_report`: Set to `TRUE` to enable status reports(If disabled the bot will only warn when a website is unreachable).
