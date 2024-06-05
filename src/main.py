@@ -6,14 +6,6 @@ import logging
 from dotenv import load_dotenv
 import sys
 
-# Load environment variables from .env file
-load_dotenv('.env')
-
-# Telegram Bot Token and Chat ID
-TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
-CHAT_ID = os.getenv('CHAT_ID')  # Replace with your Telegram group chat ID
-
-
 # Create the directory to store logs if it doesn't exist already
 if not os.path.exists('logs'):
     os.mkdir('logs')
@@ -28,6 +20,33 @@ logging.basicConfig(
 )
 
 logger = logging.getLogger() # Starts logging everything
+
+# Function to check and create .env file if it doesn't exist
+def check_and_create_env_file(file_path='.env'):
+    if not os.path.exists(file_path):
+        logger.warning("No .env file found! Generating one...")
+        with open(file_path, 'w') as env_file:
+            env_file.write("TELEGRAM_BOT_TOKEN=123456789:ABCDEF1234567890abcdef1234567890ABC\n")
+            env_file.write("CHAT_ID=-1234567890123\n")
+            env_file.write("DEBUG_MODE=1\n")
+            env_file.write("LOG=1\n")
+            env_file.write('WEBSITES_TO_CHECK="https://github.com"\n')
+            env_file.write("max_attempts=3\n")
+            env_file.write("retry_interval=60\n")
+            env_file.write("retry_delay=60\n")
+            env_file.write("keep_warning_about_retries=FALSE\n")
+            env_file.write("status_report_interval=3600\n")
+            env_file.write("send_status_report=TRUE\n")
+            env_file.write("maximum_retries=10\n")
+        logger.warning(f"{file_path} created with default values.")
+    else:
+        logger.warning(f"{file_path} already exists. Trying to load it...")
+
+# Load the .env file
+def load_environment_variables(file_path='.env'):
+    check_and_create_env_file(file_path)
+    load_dotenv(file_path)
+    logger.info(f"Environment variables succesfully loaded from {file_path}.")
 
 
 def send_msg(text):
@@ -47,7 +66,7 @@ def send_msg(text):
     else :
         logger.debug("Message wasn't sent since DEBUG_MODE is enabled on the .env file")
 
-def check_websites(websites, max_attempts=int(os.getenv('max_attempts')), retry_interval=int(os.getenv('retry_interval')), retry_delay=int(os.getenv('retry_delay')), status_report_interval=int(os.getenv('status_report_interval')), maximum_retries=int(os.getenv('maximum_retries')), send_status_report=os.getenv('send_status_report') ): #Status Report Interval 600 is equal to 10 minutes in real life for 1 hour change it to 3600
+def check_websites(websites="https://google.com", max_attempts=3, retry_interval=60, retry_delay=60, status_report_interval=3600, maximum_retries=10, send_status_report='TRUE'): #Status Report Interval 600 is equal to 10 minutes in real life for 1 hour change it to 3600
     attempts_dict_websites = {website: 0 for website in websites}
     accessible_websites = set()
     last_report_time = time.time()
@@ -163,8 +182,14 @@ def check_websites(websites, max_attempts=int(os.getenv('max_attempts')), retry_
         else:
             logger.warning("No unreachable websites remain for retrying. Continuing to check the remaining websites.")
 
+# Try to Load Environment Varibles
+load_environment_variables()
+
+# Telegram Bot Token and Chat ID
+TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
+CHAT_ID = os.getenv('CHAT_ID')  # Replace with your Telegram group chat ID
+
 # List of websites to check
 websites_to_check =os.getenv('WEBSITES_TO_CHECK').split(',')
-
 # Run the check
-check_websites(websites_to_check)
+check_websites(websites_to_check, int(os.getenv('max_attempts')), int(os.getenv('retry_interval')), int(os.getenv('retry_delay')), int(os.getenv('status_report_interval')), int(os.getenv('maximum_retries')), os.getenv('send_status_report'))
