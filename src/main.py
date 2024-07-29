@@ -50,20 +50,23 @@ def load_environment_variables(file_path='.env'):
 
 
 def send_msg(text):
-    if os.getenv('DEBUG_MODE')!="1": # messages wont be sent to your telegram bot if you are not using debug mode
+    if os.getenv('DEBUG_MODE') != "1":  # messages wont be sent to your telegram bot if you are not using debug mode
         token = TELEGRAM_BOT_TOKEN
         chat_id = CHAT_ID
         url_req = f"https://api.telegram.org/bot{token}/sendMessage?chat_id={chat_id}&text={text}"
 
-        # Make the request to the Telegram API
-        response = requests.get(url_req)
-    
-        # Check for success
-        if response.status_code == 200:
-            logger.info("Message successfully sent through Telegram's API ")
-        else:
-            logger.error(f"Failed to send message through Telegram's APP: {response.status_code}, {response.reason}")
-    else :
+        try:
+            # Make the request to the Telegram API
+            response = requests.get(url_req)
+        
+            # Check for success
+            if response.status_code == 200:
+                logger.info("Message successfully sent through Telegram's API ")
+            else:
+                logger.error(f"Failed to send message through Telegram's APP: {response.status_code}, {response.reason}")
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Failed to send message: {e}")
+    else:
         logger.debug("Message wasn't sent since DEBUG_MODE is enabled on the .env file")
 
 def check_websites(websites="https://google.com", max_attempts=3, retry_interval=60, retry_delay=60, status_report_interval=3600, maximum_retries=10, send_status_report='TRUE'): #Status Report Interval 600 is equal to 10 minutes in real life for 1 hour change it to 3600
