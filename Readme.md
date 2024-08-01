@@ -53,7 +53,13 @@ Argus Bot is a Python script designed to monitor the accessibility of a list of 
     - `status_report_interval`: Time (in seconds) between status reports.
     - `maximum_retries`: Maximum number of retries for unreachable websites.
     - `send_status_report`: Set to `TRUE` to enable status reports(If disabled the bot will only warn when a website is unreachable).
-
+    - `send_mail`: Set to `TRUE` to enable the bot to also send emails letting people know the status of websites.
+    - `EMAIL_HOST`: Your Email Server, example google is smtp.gmail.com.
+    - `EMAIL_PORT`: Your EMAIL Server PORT, example Gmail uses port 587.
+    - `EMAIL_HOST_USER`: Your Email address based on your Email Host that the bot will use to send automated emails
+    - `EMAIL_HOST_PASSWORD`: Your Email address app password
+    - `EMAIL_RECIPIENTS`: Email recipients that you would like to receive emails from the bot
+    - `SUPPORT_EMAILS`: Your Email address that the bot will use to send automated emails
 4. Run the script:
     ```bash
     python argus_bot.py
@@ -100,3 +106,10 @@ retry_delay=60
 status_report_interval=600
 maximum_retries=10
 send_status_report=TRUE
+send_mail=1
+EMAIL_HOST=smtp.gmail.com=smtp.hostmail.com
+EMAIL_PORT=587
+EMAIL_HOST_USER=botaddress@email.com
+EMAIL_HOST_PASSWORD=EMAIL_APP_PASSWORD
+EMAIL_RECIPIENTS=recipient1@email.com,recipient2@email.com
+SUPPORT_EMAILS=CompanyITSupport@email.com,CompanyITSupport2@email.com

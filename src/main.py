@@ -4,7 +4,9 @@ import requests
 import os
 import logging
 from dotenv import load_dotenv
-import sys
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 
 # Create the directory to store logs if it doesn't exist already
 if not os.path.exists('logs'):
@@ -38,6 +40,13 @@ def check_and_create_env_file(file_path='.env'):
             env_file.write("status_report_interval=3600\n")
             env_file.write("send_status_report=TRUE\n")
             env_file.write("maximum_retries=10\n")
+            env_file.write("send_mail=1\n")
+            env_file.write("EMAIL_HOST=smtp.gmail.com\n")
+            env_file.write("EMAIL_PORT=587\n")
+            env_file.write("EMAIL_HOST_USER=botaddress@email.com\n")
+            env_file.write("EMAIL_HOST_PASSWORD=EMAIL_APP_PASSWORD\n")
+            env_file.write("EMAIL_RECIPIENTS=recipient1@email.com,recipient2@email.com\n")
+            env_file.write("SUPPORT_EMAILS=CompanyITSupport@email.com,CompanyITSupport2@email.com\n")
         logger.warning(f"{file_path} created with default values.")
     else:
         logger.warning(f"{file_path} already exists. Trying to load it...")
@@ -50,11 +59,11 @@ def load_environment_variables(file_path='.env'):
 
 
 def send_msg(text):
-    if os.getenv('DEBUG_MODE') != "1":  # messages wont be sent to your telegram bot if you are not using debug mode
+    logger.info("Trying to send message through Telegram's API ")
+    if os.getenv('DEBUG_MODE') != "1":  # messages wont be sent to your telegram bot if you are using debug mode
         token = TELEGRAM_BOT_TOKEN
         chat_id = CHAT_ID
         url_req = f"https://api.telegram.org/bot{token}/sendMessage?chat_id={chat_id}&text={text}"
-
         try:
             # Make the request to the Telegram API
             response = requests.get(url_req)
@@ -63,13 +72,59 @@ def send_msg(text):
             if response.status_code == 200:
                 logger.info("Message successfully sent through Telegram's API ")
             else:
-                logger.error(f"Failed to send message through Telegram's APP: {response.status_code}, {response.reason}")
+                logger.error(f"Failed to send message through Telegram's API: {response.status_code}, {response.reason}")
         except requests.exceptions.RequestException as e:
-            logger.error(f"Failed to send message: {e}")
+            logger.error(f"Failed to send message through Telegram's API: {e}")
     else:
         logger.debug("Message wasn't sent since DEBUG_MODE is enabled on the .env file")
 
-def check_websites(websites="https://google.com", max_attempts=3, retry_interval=60, retry_delay=60, status_report_interval=3600, maximum_retries=10, send_status_report='TRUE'): #Status Report Interval 600 is equal to 10 minutes in real life for 1 hour change it to 3600
+def send_email(subject, message, send_mail,email_host, email_port, email_host_user, email_host_password, email_recipients):
+    #send_email(subject,msg,sendMail,email_host,email_port,EMAIL_HOST_USER, EMAIL_HOST_PASSWORD,email_recipients
+                    
+    logger.info("Trying to send an email...")
+    if os.getenv('DEBUG_MODE') != "1" and send_mail==1:  # messages wont be sent to your email recipients if you are using debug mode
+        # Load environment variables
+        #email_host = email_host#str(os.getenv('EMAIL_HOST'))
+        #email_port =email_port#str( os.getenv('EMAIL_PORT'))
+        #email_host_user =email_host_user#str( os.getenv('EMAIL_HOST_USER'))
+        #email_host_password =email_host_password#str( os.getenv('EMAIL_HOST_PASSWORD'))
+        #email_recipient = email_recipients
+        try:
+            # Set up the server
+            server = smtplib.SMTP(host=email_host, port=email_port)
+            server.starttls()
+            server.login(email_host_user, email_host_password)
+
+
+            # Create the email
+            msg = MIMEMultipart()
+            msg['From'] = email_host_user
+            msg['To'] = email_recipients
+            msg['Subject'] = subject
+
+            # Attach the message body
+            msg.attach(MIMEText(message, 'plain'))
+
+            # Send the email
+            server.send_message(msg)
+            server.quit()
+
+            logger.info("Email sent successfully")
+        except Exception as e:
+            logger.error(f"Failed to send email: {e}")
+
+def format_support_email(support_email_list):
+    if isinstance(support_email_list, list):
+        if len(support_email_list) == 1:
+            return support_email_list[0]
+        elif len(support_email_list) == 2:
+            return f"{support_email_list[0]} and {support_email_list[1]}"
+        else:
+            return ', '.join(support_email_list[:-1]) + ', and ' + support_email_list[-1]
+    else:
+        return support_email_list
+
+def check_websites(websites="https://google.com", max_attempts=3, retry_interval=60, retry_delay=60, status_report_interval=3600, maximum_retries=10, send_status_report='TRUE', sendMail='FALSE', email_host='',email_port='587',EMAIL_HOST_USER="automatedBot@email.com",EMAIL_HOST_PASSWORD='password',email_recipients='email_recipient1","email_recipient2',supportEmail=['John1@email.com','John2@email.com']): #Status Report Interval 600 is equal to 10 minutes in real life for 1 hour change it to 3600
     attempts_dict_websites = {website: 0 for website in websites}
     accessible_websites = set()
     last_report_time = time.time()
@@ -82,6 +137,7 @@ def check_websites(websites="https://google.com", max_attempts=3, retry_interval
                 logger.error(f"Failed to access {website} after {max_attempts} attempts. {website} will now be considered inacessible")
                 if website in accessible_websites:
                     send_msg(f"Failed to access {website} after {max_attempts} attempts. {website} will now be considered inacessible")
+                    send_email(f"Website {website} Down Alert",f"""Dear Team,\n\nThis is an automated notification to inform you that the website {website} is currently down.\n\nPlease contact {supportEmail} for further assistance and to resolve the issue as soon as possible.\n\nThank you,\n\nArgus Bot""",sendMail,email_host,email_port,EMAIL_HOST_USER, EMAIL_HOST_PASSWORD,email_recipients)
                     accessible_websites.remove(website)
                 continue
 
@@ -102,6 +158,7 @@ def check_websites(websites="https://google.com", max_attempts=3, retry_interval
                     accessible_websites.remove(website)
                     logger.error(f"Failed to access {website} after {max_attempts} attempts. {website} will now be considered inacessible")
                     send_msg(f"Failed to access {website} after {max_attempts} attempts. {website} will now be considered inacessible")
+                    send_email(f"Website {website} Down Alert",f"""Dear Team,\n\nThis is an automated notification to inform you that the website {website} is currently down.\n\nPlease contact {supportEmail} for further assistance and to resolve the issue as soon as possible.\n\nThank you,\n\nArgus Bot""",sendMail,email_host,email_port,EMAIL_HOST_USER, EMAIL_HOST_PASSWORD,email_recipients)
             except Exception as e:
                 logger.error(f"An error occurred with {website}: {e}")
                 attempts_dict_websites[website] = attempts_dict_websites[website] + 1
@@ -109,6 +166,7 @@ def check_websites(websites="https://google.com", max_attempts=3, retry_interval
                     accessible_websites.remove(website)
                     logger.error(f"Failed to access {website} after {max_attempts} attempts. {website} will now be considered inacessible")
                     send_msg(f"Failed to access {website} after {max_attempts} attempts. {website} will now be considered inacessible")
+                    send_email(f"Website {website} Down Alert",f"""Dear Team,\n\nThis is an automated notification to inform you that the website {website} is currently down. After\nfailing to access {website} after {max_attempts} attempts. I {website} will now be considered inacessible\n\nPlease contact {supportEmail} for further assistance and to resolve the issue as soon as possible.\n\nThank you,\nArgus Bot""",sendMail,email_host,email_port,EMAIL_HOST_USER, EMAIL_HOST_PASSWORD,email_recipients,supportEmail)
 
         time.sleep(retry_interval)
 
@@ -143,6 +201,7 @@ def check_websites(websites="https://google.com", max_attempts=3, retry_interval
                                 response = urllib.request.urlopen(website)
                                 logger.info(f"Looks like {website} is now accessible again, status code: {response.getcode()}")
                                 send_msg(f"Looks like {website} is now accessible again, status code: {response.getcode()}")
+                                send_email(f"Website {website} Back Online",f"""Dear Team,\n\nGood news! The website {website} is back online and operational with status code {response.getcode()}.\n\nIf you have any further concerns, please contact {supportEmail}.\n\nThank you,\nArgus Bot""",int(sendMail),email_host,email_port,EMAIL_HOST_USER, EMAIL_HOST_PASSWORD,email_recipients)
                                 attempts_dict_websites[website] = 0
                                 accessible_websites.add(website)
                         except urllib.error.URLError as e:
@@ -194,5 +253,10 @@ CHAT_ID = os.getenv('CHAT_ID')  # Replace with your Telegram group chat ID
 
 # List of websites to check
 websites_to_check =os.getenv('WEBSITES_TO_CHECK').split(',')
+#List of email recipients
+email_recipients =os.getenv('EMAIL_RECIPIENTS')
+#List of support emails
+support_email_list = os.getenv('SUPPORT_EMAILS').split(',')
+supportEmail = format_support_email(support_email_list)
 # Run the check
-check_websites(websites_to_check, int(os.getenv('max_attempts')), int(os.getenv('retry_interval')), int(os.getenv('retry_delay')), int(os.getenv('status_report_interval')), int(os.getenv('maximum_retries')), os.getenv('send_status_report'))
+check_websites(websites_to_check, int(os.getenv('max_attempts')), int(os.getenv('retry_interval')), int(os.getenv('retry_delay')), int(os.getenv('status_report_interval')), int(os.getenv('maximum_retries')), os.getenv('send_status_report'), int(os.getenv("send_mail")),str(os.getenv("EMAIL_HOST")),str(os.getenv("EMAIL_PORT")),str(os.getenv("EMAIL_HOST_USER")),str(os.getenv("EMAIL_HOST_PASSWORD")), email_recipients, supportEmail)
